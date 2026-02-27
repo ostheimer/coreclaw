@@ -8,6 +8,13 @@ import type { IpcEvent } from "./ipc.js";
 import type { Message } from "./types.js";
 import { randomUUID } from "crypto";
 import { listAvailableSkills, readState, applySkill, uninstallSkill } from "./skills/index.js";
+import { EmailConfigStore } from "./channels/email/config-store.js";
+import { GraphClient } from "./channels/email/graph-client.js";
+import { EmailSync } from "./channels/email/sync.js";
+import type { M365Config } from "./channels/email/types.js";
+
+const emailConfigStore = new EmailConfigStore();
+let emailSync: EmailSync | null = null;
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const WEB_DIR = path.join(process.cwd(), "web", "dist");
@@ -168,6 +175,122 @@ function handleApi(req: http.IncomingMessage, res: http.ServerResponse): void {
         const data = JSON.parse(body) as { skillName: string };
         void uninstallSkill(data.skillName).then((result) => {
           json(res, result, result.success ? 200 : 400);
+        }).catch((err: unknown) => {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+        });
+      });
+    }
+
+    // ---------- Email Setup Wizard API ----------
+
+    if (route === "GET /api/email/config") {
+      const redacted = emailConfigStore.loadRedacted();
+      return json(res, redacted ?? { configured: false });
+    }
+
+    if (route === "GET /api/email/status") {
+      return json(res, {
+        configured: emailConfigStore.hasConfig(),
+        syncing: emailSync?.isRunning() ?? false,
+        syncState: emailSync?.getSyncState() ?? null,
+      });
+    }
+
+    if (route === "POST /api/email/test") {
+      return readBody(req, (body) => {
+        const config = JSON.parse(body) as M365Config;
+        const client = new GraphClient(config);
+        void client.testConnection().then((result) => {
+          json(res, result);
+        }).catch((err: unknown) => {
+          json(res, { success: false, error: err instanceof Error ? err.message : String(err) });
+        });
+      });
+    }
+
+    if (route === "POST /api/email/mailboxes") {
+      return readBody(req, (body) => {
+        const config = JSON.parse(body) as M365Config;
+        const client = new GraphClient(config);
+        void client.listMailboxes().then((users) => {
+          json(res, users.map((u) => ({
+            email: u.mail ?? u.userPrincipalName,
+            displayName: u.displayName,
+          })));
+        }).catch((err: unknown) => {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+        });
+      });
+    }
+
+    if (route === "POST /api/email/folders") {
+      return readBody(req, (body) => {
+        const config = JSON.parse(body) as M365Config;
+        const client = new GraphClient(config);
+        void client.listFolders().then((folders) => {
+          json(res, folders);
+        }).catch((err: unknown) => {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+        });
+      });
+    }
+
+    if (route === "POST /api/email/save") {
+      return readBody(req, (body) => {
+        const config = JSON.parse(body) as M365Config;
+        emailConfigStore.save(config);
+        json(res, { ok: true });
+      });
+    }
+
+    if (route === "POST /api/email/start") {
+      const config = emailConfigStore.load();
+      if (!config) return json(res, { error: "Keine E-Mail-Konfiguration vorhanden" }, 400);
+
+      if (emailSync?.isRunning()) {
+        emailSync.stop();
+      }
+      emailSync = new EmailSync(config);
+      void emailSync.start().then(() => {
+        json(res, { ok: true, syncing: true });
+      }).catch((err: unknown) => {
+        json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+      });
+      return;
+    }
+
+    if (route === "POST /api/email/stop") {
+      if (emailSync) {
+        emailSync.stop();
+        emailSync = null;
+      }
+      return json(res, { ok: true, syncing: false });
+    }
+
+    if (route === "DELETE /api/email/config") {
+      if (emailSync) {
+        emailSync.stop();
+        emailSync = null;
+      }
+      emailConfigStore.delete();
+      return json(res, { ok: true });
+    }
+
+    if (route === "POST /api/email/send") {
+      return readBody(req, (body) => {
+        const data = JSON.parse(body) as {
+          to: string[];
+          subject: string;
+          body: string;
+          cc?: string[];
+          replyToMessageId?: string;
+        };
+        const config = emailConfigStore.load();
+        if (!config) return json(res, { error: "Keine E-Mail-Konfiguration vorhanden" }, 400);
+
+        const client = new GraphClient(config);
+        void client.sendMail(data.to, data.subject, data.body, data.cc, data.replyToMessageId).then(() => {
+          json(res, { ok: true });
         }).catch((err: unknown) => {
           json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
         });

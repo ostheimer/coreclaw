@@ -73,25 +73,55 @@ export class InboxConductor extends BaseConductor {
     const subject = (message.subject ?? "").toLowerCase();
     const body = message.body.toLowerCase();
     const channel = message.channel;
+    const metadata = (message.metadata ?? {}) as Record<string, unknown>;
 
     if (channel === "webhook") {
       return { category: "api-request", priority: "normal", agentType: "webhook-handler", reason: "Webhook channel" };
     }
 
+    // Manual input (call notes, case updates)
+    if (channel === "manual") {
+      const type = metadata["type"] as string | undefined;
+      if (type === "call-note") {
+        return { category: "call-note", priority: "normal", agentType: "case-agent", reason: "Manual call note" };
+      }
+      return { category: "manual-input", priority: "normal", agentType: "general-agent", reason: "Manual input" };
+    }
+
+    // Email-specific triage (M365/Exchange)
+    if (channel === "email") {
+      const importance = metadata["importance"] as string | undefined;
+      const hasAttachments = metadata["hasAttachments"] as boolean | undefined;
+
+      if (importance === "high" || subject.includes("dringend") || subject.includes("urgent") || subject.includes("critical")) {
+        return { category: "urgent-email", priority: "urgent", agentType: "email-agent", reason: "High importance / urgent keywords" };
+      }
+
+      if (subject.includes("rechnung") || subject.includes("invoice") || subject.includes("billing") || subject.includes("zahlung") || subject.includes("payment")) {
+        return { category: "billing-email", priority: "high", agentType: "billing-agent", reason: "Billing keywords (DE/EN)" };
+      }
+
+      if (subject.includes("fehler") || subject.includes("bug") || subject.includes("error") || subject.includes("problem") || body.includes("funktioniert nicht")) {
+        return { category: "bug-report", priority: "high", agentType: "support-agent", reason: "Bug/error keywords (DE/EN)" };
+      }
+
+      if (subject.includes("kündigung") || subject.includes("cancellation") || subject.includes("beschwerde") || subject.includes("complaint")) {
+        return { category: "escalation", priority: "urgent", agentType: "escalation-agent", reason: "Cancellation/complaint keywords" };
+      }
+
+      if (hasAttachments && (subject.includes("vertrag") || subject.includes("contract") || subject.includes("angebot") || subject.includes("offer"))) {
+        return { category: "contract-email", priority: "high", agentType: "document-agent", reason: "Contract/offer with attachments" };
+      }
+
+      if (subject.includes("re:") || subject.includes("aw:")) {
+        return { category: "email-reply", priority: "normal", agentType: "email-agent", reason: "Reply in existing thread" };
+      }
+
+      return { category: "general-email", priority: "normal", agentType: "email-agent", reason: "Standard email" };
+    }
+
     if (subject.includes("urgent") || subject.includes("critical") || body.includes("outage")) {
       return { category: "urgent-support", priority: "urgent", agentType: "support-agent", reason: "Urgent keywords" };
-    }
-
-    if (subject.includes("invoice") || subject.includes("billing") || subject.includes("payment")) {
-      return { category: "billing", priority: "high", agentType: "billing-agent", reason: "Billing keywords" };
-    }
-
-    if (subject.includes("bug") || subject.includes("error") || subject.includes("broken")) {
-      return { category: "bug-report", priority: "high", agentType: "support-agent", reason: "Bug report keywords" };
-    }
-
-    if (channel === "email") {
-      return { category: "general-email", priority: "normal", agentType: "email-agent", reason: "Standard email" };
     }
 
     if (channel === "teams" || channel === "slack") {

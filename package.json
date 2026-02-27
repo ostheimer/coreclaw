@@ -32,6 +32,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@azure/msal-node": "^5.0.5",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "dotenv": "^16.4.5",
     "ws": "^8.19.0",
     "zod": "^3.22.4"

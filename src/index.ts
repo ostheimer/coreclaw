@@ -13,6 +13,8 @@ import {
   LearningConductor,
 } from "./conductors/index.js";
 import type { Task } from "./types.js";
+import { EmailConfigStore } from "./channels/email/config-store.js";
+import { EmailSync } from "./channels/email/sync.js";
 
 // ---------- Setup ----------
 
@@ -85,6 +87,18 @@ async function start(): Promise<void> {
   }
 
   httpServer = startServer();
+
+  // Auto-start email sync if configured
+  const emailConfig = new EmailConfigStore().load();
+  if (emailConfig?.mailbox) {
+    try {
+      const sync = new EmailSync(emailConfig);
+      await sync.start();
+      console.log(`[CoreClaw] Email sync started for ${emailConfig.mailbox}`);
+    } catch (err) {
+      console.warn("[CoreClaw] Email sync auto-start failed:", err);
+    }
+  }
 
   console.log(`[CoreClaw] Started. Queue: ${queue.size} pending, ${queue.activeCount} running`);
 }

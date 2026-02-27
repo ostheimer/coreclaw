@@ -48,12 +48,19 @@
 - [x] Knowledge Source interface for pluggable data connectors
 - [x] 13 unit tests for skills engine (manifest, state, backup, apply/uninstall lifecycle)
 
-## Phase 3: First Channel — Email
-- [ ] Email channel adapter (Gmail API / IMAP)
-- [ ] Incoming email processing and storage
-- [ ] Outgoing email (reply, compose)
-- [ ] Thread/conversation context tracking
-- [ ] Basic email triage (Inbox Conductor — rule-based)
+## Phase 3: First Channel — Microsoft 365 Email ✅
+- [x] Microsoft Graph API client mit MSAL-Authentifizierung (`src/channels/email/graph-client.ts`)
+- [x] Application Permissions Flow (Client Credentials — kein Browser-Login nötig)
+- [x] Delta Query Sync-Engine — inkrementelle Synchronisation (`src/channels/email/sync.ts`)
+- [x] E-Mail lesen, senden, antworten, Entwürfe erstellen
+- [x] Verschlüsselter Config Store für Zugangsdaten (`src/channels/email/config-store.ts`)
+- [x] Setup-Wizard API: test, mailboxes, folders, save, start/stop (`src/server.ts`)
+- [x] Setup-Wizard GUI: 6-Schritte-Assistent mit Azure AD Anleitung (`web/src/pages/EmailSetup.tsx`)
+- [x] Konfigurierte Ansicht: Sync-Status, Start/Stop, Statistiken
+- [x] Inbox Conductor erweitert: DE/EN Keyword-Triage für E-Mails (urgent, billing, bug, escalation, reply)
+- [x] Auto-Start: E-Mail-Sync startet automatisch wenn gespeicherte Konfiguration vorhanden
+- [x] Thread-Tracking via Microsoft Graph `conversationId`
+- [x] 11 neue Tests (Config-Verschlüsselung, Triage-Regeln), insgesamt 53 Tests
 
 ## Phase 4: Vector Store + Context
 - [ ] sqlite-vec integration for embedding storage
