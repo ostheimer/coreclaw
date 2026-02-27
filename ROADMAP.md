@@ -1,21 +1,23 @@
 # CoreClaw Roadmap
 
-## Phase 0: Foundation (current)
+## Phase 0: Foundation ✅
 - [x] Repository created
 - [x] README (English + German)
 - [x] Roadmap
-- [ ] Project scaffolding (package.json, tsconfig, directory structure)
-- [ ] CLAUDE.md for Claude Code integration
-- [ ] Basic `.claude/skills/setup/SKILL.md`
+- [x] Project scaffolding (package.json, tsconfig, directory structure)
+- [x] CLAUDE.md for Claude Code integration
+- [x] Basic `.claude/skills/setup/SKILL.md`
 
-## Phase 1: Core Infrastructure
-- [ ] Single Node.js host process (`src/index.ts`)
-- [ ] SQLite database schema (messages, tasks, sessions, feedback, prompt versions)
-- [ ] Container runner (Docker, mount security, secrets via stdin)
-- [ ] Agent runner in container (Claude Agent SDK integration)
-- [ ] Structured agent output format (status, priority, summary, needsReview)
-- [ ] Basic queue with concurrency control
-- [ ] IPC (host ↔ container communication)
+## Phase 1: Core Infrastructure ✅
+- [x] Single Node.js host process (`src/index.ts`)
+- [x] SQLite database schema via `node:sqlite` (messages, tasks, sessions, feedback, prompt versions)
+- [x] Container runner (`src/container-runner.ts` — Docker, mount security, secrets handling)
+- [x] Agent runner in container (`container/agent-runner/agent.ts` — Claude SDK + structured output)
+- [x] Structured agent output format (`AgentOutputSchema` — status, priority, summary, needsReview)
+- [x] Priority queue with concurrency control (`src/queue.ts`)
+- [x] IPC event bus for conductor communication (`src/ipc.ts`)
+- [x] All six conductor skeletons with IPC integration
+- [x] 23 passing unit tests
 
 ## Phase 2: First Channel — Email
 - [ ] Email channel adapter (Gmail API / IMAP)
@@ -25,13 +27,16 @@
 - [ ] Basic email triage (Inbox Conductor — rule-based)
 
 ## Phase 3: Conductor Framework
-- [ ] Conductor interface and base implementation
-- [ ] Inbox Conductor (triage, categorize, route)
-- [ ] Quality Conductor (output review, guard rails)
-- [ ] Chief Conductor (status aggregation, briefings)
-- [ ] Workflow Conductor (multi-step task planning)
-- [ ] Context Conductor (relevant data retrieval)
-- [ ] Learning Conductor (feedback collection, prompt improvement suggestions)
+- [x] Conductor interface and base implementation (`BaseConductor`)
+- [x] Inbox Conductor (triage, categorize, route — rule-based)
+- [x] Quality Conductor (output review, guard rails — host-level)
+- [x] Chief Conductor (status aggregation, briefings, escalation)
+- [x] Workflow Conductor (multi-step task planning, parallel steps)
+- [x] Context Conductor (thread history retrieval)
+- [x] Learning Conductor (feedback collection, prompt metric tracking)
+- [ ] Full agent-based Quality Conductor (container execution for complex review)
+- [ ] RAG integration for Context Conductor
+- [ ] Prompt improvement suggestions from Learning Conductor
 
 ## Phase 4: Approval Workflows
 - [ ] Draft mode (agent creates draft, human confirms)
@@ -52,10 +57,10 @@
 - [ ] Ticketing system adapter (Jira, Zendesk — via skills)
 
 ## Phase 7: Prompt Management
-- [ ] Prompt versioning (DB-backed, with activation timestamps)
+- [ ] Prompt versioning (DB-backed, with activation timestamps) — schema ready
 - [ ] A/B prompt testing framework
 - [ ] Feedback-driven prompt improvement (Learning Conductor)
-- [ ] Prompt performance metrics (response quality, correction rate)
+- [ ] Prompt performance metrics (response quality, correction rate) — schema ready
 
 ## Phase 8: Advanced Features
 - [ ] RAG integration (Context Conductor with vector DB)
