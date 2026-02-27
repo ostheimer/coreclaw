@@ -2,11 +2,17 @@ import { BaseConductor } from "./base.js";
 import { taskRepo } from "../db.js";
 import { randomUUID } from "crypto";
 import type { IpcEvent } from "../ipc.js";
-import type { Task } from "../types.js";
+import type { Task, AgentOutput } from "../types.js";
+import { createDraft } from "../approval/engine.js";
 
 interface TaskCreatedPayload {
   task: Task;
   triage?: { category: string; priority: Task["priority"] };
+}
+
+interface TaskCompletedPayload {
+  task: Task;
+  output: AgentOutput;
 }
 
 interface WorkflowPlan {
@@ -32,10 +38,33 @@ export class WorkflowConductor extends BaseConductor {
     super("workflow");
   }
 
+  private static readonly DRAFT_AGENT_TYPES = new Set([
+    "email-agent", "support-agent", "billing-agent", "escalation-agent",
+    "document-agent", "case-agent", "general-agent",
+  ]);
+
   protected registerSubscriptions(): void {
     this.on<TaskCreatedPayload>("task:created", (event) => {
       void this.handleTaskCreated(event);
     });
+
+    this.on<TaskCompletedPayload>("task:completed", (event) => {
+      void this.handleTaskCompleted(event);
+    });
+  }
+
+  private async handleTaskCompleted(event: IpcEvent<TaskCompletedPayload>): Promise<void> {
+    const { task, output } = event.payload;
+
+    // Create a draft for review if the agent type produces outgoing content
+    if (WorkflowConductor.DRAFT_AGENT_TYPES.has(task.type) && output.outputs.length > 0) {
+      const channel = task.sourceChannel ?? "email";
+      const draft = createDraft(task, output, channel);
+
+      this.publish("conductor:review-request", { task, output }, "quality");
+
+      console.log(`[workflow] Draft ${draft.id} created for completed task ${task.id}`);
+    }
   }
 
   private async handleTaskCreated(event: IpcEvent<TaskCreatedPayload>): Promise<void> {

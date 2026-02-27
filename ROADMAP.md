@@ -74,11 +74,29 @@
 - [ ] Context Conductor: enrich agent context with external data
 - [ ] Knowledge Source registry (auto-discover installed sources)
 
-## Phase 6: Approval Workflows
-- [ ] Draft mode (agent creates draft, human confirms via GUI)
-- [ ] Auto-approve rules (pattern matching for routine responses)
-- [ ] Escalation logic (uncertainty detection → route to human)
-- [ ] Review queue with priority sorting in Drafts page
+## Phase 6: Approval Workflows ✅
+- [x] Draft-Tabelle + Corrections-Tabelle in DB (Migration v2)
+- [x] Draft Repository: CRUD, Status-Übergänge, Quality-Score, Priority-Sortierung
+- [x] Correction Repository: Original vs. bearbeitet, Change-Type-Klassifikation
+- [x] Approval Engine (`src/approval/engine.ts`):
+  - [x] createDraft() — Agent-Output → Draft mit Source-Message-Kontext
+  - [x] approveDraft() — Freigabe durch MA
+  - [x] rejectDraft() — Ablehnung mit Begründung (→ Correction)
+  - [x] editAndApproveDraft() — Bearbeitung + Freigabe (→ Correction für Learning)
+  - [x] autoApproveDraft() — Automatische Freigabe bei Regel-Match
+  - [x] Change-Type-Klassifikation: minor_edit, major_rewrite, tone_change, factual_fix, rejection
+- [x] Quality Conductor erweitert: Drafts scoren (0-100), Qualitätsnotizen generieren
+- [x] Workflow Conductor erweitert: Draft-Erstellung nach Agent-Completion für Email-Typen
+- [x] REST API: GET/POST drafts, approve, reject, edit, stats, corrections
+- [x] GUI Drafts-Seite komplett neu:
+  - [x] Statistik-Leiste (zur Prüfung, freigegeben, abgelehnt, auto-genehmigt, Korrekturen)
+  - [x] Review-Queue mit Priority-Sortierung und Quality-Score-Badge
+  - [x] Inline-Editor: Betreff + Body bearbeiten, Feedback-Feld für System-Lernen
+  - [x] Source-Message-Kontext (ursprüngliche E-Mail anzeigen)
+  - [x] Ablehnung mit Pflicht-Begründung
+  - [x] Letzte Aktivität (Verlauf bearbeiteter Drafts)
+- [x] IPC Events: draft:created, draft:approved, draft:rejected, draft:edited, correction:recorded
+- [x] 12 neue Tests (Draft-CRUD, Corrections, Lifecycle), insgesamt 65 Tests
 
 ## Phase 7: Learning Loop
 - [ ] Track MA corrections (original → edited pairs)

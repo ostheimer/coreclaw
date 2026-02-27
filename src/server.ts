@@ -12,6 +12,13 @@ import { EmailConfigStore } from "./channels/email/config-store.js";
 import { GraphClient } from "./channels/email/graph-client.js";
 import { EmailSync } from "./channels/email/sync.js";
 import type { M365Config } from "./channels/email/types.js";
+import { draftRepo, correctionRepo } from "./db.js";
+import {
+  approveDraft,
+  rejectDraft,
+  editAndApproveDraft,
+  getApprovalStats,
+} from "./approval/engine.js";
 
 const emailConfigStore = new EmailConfigStore();
 let emailSync: EmailSync | null = null;
@@ -179,6 +186,64 @@ function handleApi(req: http.IncomingMessage, res: http.ServerResponse): void {
           json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
         });
       });
+    }
+
+    // ---------- Drafts / Approval API ----------
+
+    if (route === "GET /api/drafts") {
+      const status = url.searchParams.get("status");
+      const limit = parseInt(url.searchParams.get("limit") ?? "50", 10);
+      const drafts = status
+        ? draftRepo.findByStatus(status as "pending_review", limit)
+        : draftRepo.findPendingReview(limit);
+      return json(res, drafts);
+    }
+
+    if (route === "GET /api/drafts/stats") {
+      return json(res, getApprovalStats());
+    }
+
+    if (route === "GET /api/drafts/recent") {
+      const limit = parseInt(url.searchParams.get("limit") ?? "50", 10);
+      return json(res, draftRepo.findRecent(limit));
+    }
+
+    if (url.pathname.match(/^\/api\/drafts\/[^/]+$/) && method === "GET") {
+      const id = url.pathname.split("/")[3]!;
+      const draft = draftRepo.findById(id);
+      if (!draft) return notFound(res);
+      const corrections = correctionRepo.findByDraftId(id);
+      const sourceMessage = draft.sourceMessageId ? messageRepo.findById(draft.sourceMessageId) : null;
+      return json(res, { draft, corrections, sourceMessage });
+    }
+
+    if (url.pathname.match(/^\/api\/drafts\/[^/]+\/approve$/) && method === "POST") {
+      const id = url.pathname.split("/")[3]!;
+      const result = approveDraft(id);
+      return result ? json(res, result) : json(res, { error: "Draft nicht gefunden oder bereits bearbeitet" }, 400);
+    }
+
+    if (url.pathname.match(/^\/api\/drafts\/[^/]+\/reject$/) && method === "POST") {
+      const id = url.pathname.split("/")[3]!;
+      return readBody(req, (body) => {
+        const data = JSON.parse(body) as { reason: string };
+        const result = rejectDraft(id, data.reason);
+        return result ? json(res, result) : json(res, { error: "Draft nicht gefunden oder bereits bearbeitet" }, 400);
+      });
+    }
+
+    if (url.pathname.match(/^\/api\/drafts\/[^/]+\/edit$/) && method === "POST") {
+      const id = url.pathname.split("/")[3]!;
+      return readBody(req, (body) => {
+        const data = JSON.parse(body) as { body: string; subject?: string; feedback?: string };
+        const result = editAndApproveDraft(id, data.body, data.subject ?? null, data.feedback ?? null);
+        return result ? json(res, result) : json(res, { error: "Draft nicht gefunden oder bereits bearbeitet" }, 400);
+      });
+    }
+
+    if (route === "GET /api/corrections") {
+      const limit = parseInt(url.searchParams.get("limit") ?? "50", 10);
+      return json(res, correctionRepo.findRecent(limit));
     }
 
     // ---------- Email Setup Wizard API ----------

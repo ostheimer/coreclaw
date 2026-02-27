@@ -19,7 +19,15 @@ export type IpcEventType =
   | "conductor:review-result"
   | "conductor:context-ready"
   | "conductor:workflow-planned"
-  | "conductor:feedback";
+  | "conductor:feedback"
+  | "draft:created"
+  | "draft:approved"
+  | "draft:rejected"
+  | "draft:edited"
+  | "draft:sent"
+  | "draft:auto_approved"
+  | "draft:quality-reviewed"
+  | "correction:recorded";
 
 export interface IpcEvent<T = unknown> {
   id: string;
