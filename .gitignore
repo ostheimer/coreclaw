@@ -10,3 +10,4 @@ coverage/
 *.tsbuildinfo
 web/dist/
 web/node_modules/
+.coreclaw/

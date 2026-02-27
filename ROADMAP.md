@@ -32,41 +32,57 @@
 - [x] Full API: GET/POST messages, tasks, notes, status
 - [x] Cross-platform: runs on Windows, macOS, Linux via `npm run dev`
 
-## Phase 2: First Channel — Email
+## Phase 2: Skills Engine ✅
+- [x] Skill type system + Zod manifest schema (`src/skills/types.ts`)
+- [x] State management in `.coreclaw/` directory (`src/skills/state.ts`)
+- [x] Manifest validation + available skills listing (`src/skills/manifest.ts`)
+- [x] Atomic backup/restore for safe apply/uninstall (`src/skills/backup.ts`)
+- [x] Three-way merge using `git merge-file` (NanoClaw pattern) (`src/skills/merge.ts`)
+- [x] Apply engine: add files, merge modifications, npm deps, env vars, post-apply hooks (`src/skills/apply.ts`)
+- [x] Uninstall engine: remove added files, restore modified files (`src/skills/uninstall.ts`)
+- [x] Pre-flight validation: dependency checks, conflict detection, duplicate prevention
+- [x] REST API: GET/POST skills, apply, uninstall (`src/server.ts`)
+- [x] GUI: Skills page with install/uninstall, status display (`web/src/pages/Skills.tsx`)
+- [x] First skill template: WordPress Adapter (`skills/wordpress-adapter/`)
+- [x] Second skill template: Webhook Channel (`skills/webhook-channel/`)
+- [x] Knowledge Source interface for pluggable data connectors
+- [x] 13 unit tests for skills engine (manifest, state, backup, apply/uninstall lifecycle)
+
+## Phase 3: First Channel — Email
 - [ ] Email channel adapter (Gmail API / IMAP)
 - [ ] Incoming email processing and storage
 - [ ] Outgoing email (reply, compose)
 - [ ] Thread/conversation context tracking
 - [ ] Basic email triage (Inbox Conductor — rule-based)
 
-## Phase 3: Vector Store + Context
+## Phase 4: Vector Store + Context
 - [ ] sqlite-vec integration for embedding storage
 - [ ] Embedding generation for messages and notes
 - [ ] Context Conductor: semantic search for relevant past conversations
 - [ ] Learning Conductor: correction embeddings for few-shot prompt injection
 
-## Phase 4: Knowledge Sources
-- [ ] Knowledge Source interface (pluggable data connectors)
-- [ ] WordPress adapter (REST API, WP-CLI, MCP)
-- [ ] CRM adapter skeleton
+## Phase 5: Knowledge Sources
+- [ ] WordPress adapter activation via GUI (install skill)
+- [ ] CRM adapter skill skeleton
 - [ ] Context Conductor: enrich agent context with external data
+- [ ] Knowledge Source registry (auto-discover installed sources)
 
-## Phase 5: Approval Workflows
+## Phase 6: Approval Workflows
 - [ ] Draft mode (agent creates draft, human confirms via GUI)
 - [ ] Auto-approve rules (pattern matching for routine responses)
 - [ ] Escalation logic (uncertainty detection → route to human)
 - [ ] Review queue with priority sorting in Drafts page
 
-## Phase 6: Learning Loop
+## Phase 7: Learning Loop
 - [ ] Track MA corrections (original → edited pairs)
 - [ ] Prompt versioning with A/B testing
 - [ ] Learning Conductor: suggest prompt improvements from patterns
 - [ ] Feedback-driven quality metrics per prompt version
 
-## Phase 7: Self-Modification Engine
-- [ ] Architect Agent (code generation, testing, commit)
+## Phase 8: Architect Agent (Self-Modification)
+- [ ] Architect Agent in container (code generation, testing, commit)
 - [ ] Git integration (auto-commit, push to user's repo)
-- [ ] "Connect WordPress" flow via GUI → generates adapter code
+- [ ] "Connect WordPress" flow via GUI → generates adapter code as skill
 - [ ] Test runner for generated code
 - [ ] Restart mechanism after code changes
 - [ ] Rollback on failure (git revert)

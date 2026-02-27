@@ -5,6 +5,7 @@ import {
   FileEdit,
   Phone,
   Activity,
+  Puzzle,
   Settings,
   Wifi,
   WifiOff,
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { to: "/drafts", icon: FileEdit, label: "Entwürfe" },
   { to: "/notes", icon: Phone, label: "Notizen" },
   { to: "/activity", icon: Activity, label: "Aktivität" },
+  { to: "/skills", icon: Puzzle, label: "Skills" },
   { to: "/settings", icon: Settings, label: "Einstellungen" },
 ];
 

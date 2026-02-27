@@ -7,6 +7,7 @@ import { ipcBus } from "./ipc.js";
 import type { IpcEvent } from "./ipc.js";
 import type { Message } from "./types.js";
 import { randomUUID } from "crypto";
+import { listAvailableSkills, readState, applySkill, uninstallSkill } from "./skills/index.js";
 
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 const WEB_DIR = path.join(process.cwd(), "web", "dist");
@@ -137,6 +138,40 @@ function handleApi(req: http.IncomingMessage, res: http.ServerResponse): void {
       if (!name) return json(res, []);
       const active = promptRepo.findActive(name);
       return json(res, active ? [active] : []);
+    }
+
+    // ---------- Skills API ----------
+
+    if (route === "GET /api/skills") {
+      const available = listAvailableSkills();
+      return json(res, available);
+    }
+
+    if (route === "GET /api/skills/state") {
+      const state = readState();
+      return json(res, state);
+    }
+
+    if (route === "POST /api/skills/apply") {
+      return readBody(req, (body) => {
+        const data = JSON.parse(body) as { skillPath: string };
+        void applySkill(data.skillPath).then((result) => {
+          json(res, result, result.success ? 200 : 400);
+        }).catch((err: unknown) => {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+        });
+      });
+    }
+
+    if (route === "POST /api/skills/uninstall") {
+      return readBody(req, (body) => {
+        const data = JSON.parse(body) as { skillName: string };
+        void uninstallSkill(data.skillName).then((result) => {
+          json(res, result, result.success ? 200 : 400);
+        }).catch((err: unknown) => {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
+        });
+      });
     }
 
     notFound(res);

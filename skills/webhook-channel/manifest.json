@@ -1,0 +1,20 @@
+{
+  "skill": "webhook-channel",
+  "version": "1.0.0",
+  "description": "Generic inbound/outbound webhook channel — receive messages via HTTP POST, send via configurable webhook URLs.",
+  "adds": [
+    "src/channels/webhook.ts"
+  ],
+  "modifies": [],
+  "structured": {
+    "npm_dependencies": {},
+    "env_additions": [
+      "WEBHOOK_SECRET",
+      "WEBHOOK_OUTBOUND_URL"
+    ]
+  },
+  "conflicts": [],
+  "depends": [],
+  "file_ops": [],
+  "post_apply": []
+}

@@ -1,0 +1,24 @@
+{
+  "skill": "wordpress-adapter",
+  "version": "1.0.0",
+  "description": "WordPress REST API integration — read/write custom post types, pages, and users as a knowledge source for the Context Conductor.",
+  "adds": [
+    "src/knowledge-sources/wordpress.ts",
+    "src/knowledge-sources/types.ts"
+  ],
+  "modifies": [
+    "src/conductors/context.ts"
+  ],
+  "structured": {
+    "npm_dependencies": {},
+    "env_additions": [
+      "WORDPRESS_URL",
+      "WORDPRESS_USER",
+      "WORDPRESS_APP_PASSWORD"
+    ]
+  },
+  "conflicts": [],
+  "depends": [],
+  "file_ops": [],
+  "post_apply": []
+}

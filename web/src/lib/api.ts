@@ -58,6 +58,48 @@ export interface Message {
   createdAt: string;
 }
 
+export interface AvailableSkill {
+  name: string;
+  version: string;
+  description: string;
+  installed: boolean;
+  depends: string[];
+  conflicts: string[];
+  path: string;
+}
+
+export interface SkillState {
+  engineVersion: string;
+  coreVersion: string;
+  appliedSkills: Array<{
+    name: string;
+    version: string;
+    appliedAt: string;
+    fileHashes: Record<string, string>;
+  }>;
+}
+
+export interface ApplyResult {
+  success: boolean;
+  skill: string;
+  version: string;
+  filesAdded: string[];
+  filesModified: string[];
+  mergeConflicts: string[];
+  npmDepsAdded: Record<string, string>;
+  envVarsAdded: string[];
+  error?: string;
+  durationMs: number;
+}
+
+export interface UninstallResult {
+  success: boolean;
+  skill: string;
+  filesRemoved: string[];
+  filesRestored: string[];
+  error?: string;
+}
+
 export const api = {
   getStatus: () => request<StatusResponse>("/status"),
 
@@ -87,4 +129,21 @@ export const api = {
     body: string;
     caseRef?: string;
   }) => request<Message>("/notes", { method: "POST", body: JSON.stringify(data) }),
+
+  // Skills API
+  getSkills: () => request<AvailableSkill[]>("/skills"),
+
+  getSkillState: () => request<SkillState>("/skills/state"),
+
+  applySkill: (skillPath: string) =>
+    request<ApplyResult>("/skills/apply", {
+      method: "POST",
+      body: JSON.stringify({ skillPath }),
+    }),
+
+  uninstallSkill: (skillName: string) =>
+    request<UninstallResult>("/skills/uninstall", {
+      method: "POST",
+      body: JSON.stringify({ skillName }),
+    }),
 };

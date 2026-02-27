@@ -117,10 +117,12 @@ Not everything should go out automatically. CoreClaw supports:
 | `src/index.ts` | Host process: channels, queue, conductor coordination |
 | `src/conductors/` | Conductor implementations (chief, inbox, quality, workflow, context, learning) |
 | `src/channels/` | Channel adapters (email, teams, slack, google-chat, webhooks) |
+| `src/skills/` | Skills engine: apply, uninstall, three-way merge, backup/restore |
 | `src/queue.ts` | Task queue with priority, concurrency limits, retry logic |
 | `src/container-runner.ts` | Spawns agent containers with mounts and secrets |
 | `src/db.ts` | SQLite: messages, tasks, sessions, feedback, prompt versions |
 | `container/agent-runner/` | In-container agent logic (Claude Agent SDK) |
+| `skills/` | Pre-packaged skill templates (WordPress, Webhook, etc.) |
 | `conductors/{name}/` | Per-conductor configuration and memory |
 
 ### Data Flow (Example: Incoming Email)
@@ -167,13 +169,26 @@ prompts/                      # Versioned prompt templates
 
 ## Customization
 
-Like NanoClaw, CoreClaw is designed to be customized via code changes and skills:
+CoreClaw has a built-in **Skills Engine** (inspired by NanoClaw's three-way merge approach) for safe, reversible extensions:
 
-- "Add Jira as a ticket source" → `/add-jira`
-- "Change the approval workflow for support emails" → modify conductor rules
-- "Add a new conductor for compliance" → create a new conductor module
+- **Pre-packaged skills** in `skills/` — install via the GUI (e.g., WordPress adapter, Webhook channel)
+- **Three-way merge** — skill modifications merge with local changes without overwriting
+- **Atomic operations** — every install creates a backup; on failure, automatic rollback
+- **Dependency & conflict checks** — skills declare what they need and what they conflict with
+- **GUI-driven** — install, uninstall, and manage skills from the browser, no CLI required
 
-The codebase stays small enough that Claude Code can safely modify it.
+```
+skills/
+├── wordpress-adapter/
+│   ├── manifest.json
+│   ├── add/src/knowledge-sources/wordpress.ts
+│   └── modify/src/conductors/context.ts
+└── webhook-channel/
+    ├── manifest.json
+    └── add/src/channels/webhook.ts
+```
+
+The codebase stays small enough to understand and modify directly.
 
 ## What Sets CoreClaw Apart
 
