@@ -171,9 +171,18 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
           <div>
             <p className="font-medium">Neue Registrierung erstellen</p>
             <p className="text-slate-500 mt-1">
-              Name: <code className="bg-slate-100 px-1.5 py-0.5 rounded">CoreClaw Email</code><br />
-              Kontotypen: <strong>Nur Konten in diesem Organisationsverzeichnis</strong><br />
-              Umleitungs-URI: nicht benötigt (leer lassen)
+              Name: <code className="bg-slate-100 px-1.5 py-0.5 rounded">CoreClaw Email</code>
+            </p>
+            <p className="text-slate-500 mt-1">
+              Unterstützte Kontotypen: Wählen Sie die <strong>erste Option</strong> im Dropdown:<br />
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded">Nur ein Mandant – [Ihr Organisationsname]</code><br />
+              <span className="text-xs text-slate-400">(CoreClaw greift nur auf Postfächer in Ihrer eigenen Organisation zu)</span>
+            </p>
+            <p className="text-slate-500 mt-1">
+              Umleitungs-URI: <strong>leer lassen</strong> (nicht benötigt — CoreClaw verwendet den Server-zu-Server-Flow ohne Browser-Login)
+            </p>
+            <p className="text-slate-500 mt-1">
+              Dann auf <strong>Registrieren</strong> klicken.
             </p>
           </div>
         </li>
@@ -182,31 +191,63 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
           <div>
             <p className="font-medium">Client Secret erstellen</p>
             <p className="text-slate-500 mt-1">
-              Zertifikate & Geheimnisse → Neuer geheimer Clientschlüssel →
-              Beschreibung: <code className="bg-slate-100 px-1.5 py-0.5 rounded">CoreClaw</code> →
-              Ablauf wählen → <strong>Wert sofort kopieren!</strong>
+              Nach der Registrierung öffnet sich die App-Übersicht. Navigieren Sie zu:
             </p>
+            <p className="text-slate-500 mt-1">
+              <strong>Zertifikate & Geheimnisse</strong> (im linken Menü) → <strong>Neuer geheimer Clientschlüssel</strong>
+            </p>
+            <p className="text-slate-500 mt-1">
+              Beschreibung: <code className="bg-slate-100 px-1.5 py-0.5 rounded">CoreClaw</code> →
+              Ablauf: z.B. <strong>24 Monate</strong> → <strong>Hinzufügen</strong>
+            </p>
+            <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 text-xs text-red-700">
+              <strong>Achtung:</strong> Den <strong>Wert</strong> (nicht die Geheimnis-ID!) sofort kopieren!
+              Er wird nur einmal angezeigt. Wenn Sie ihn verlieren, müssen Sie ein neues Secret erstellen.
+            </div>
           </div>
         </li>
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">4</span>
           <div>
+            <p className="font-medium">Wichtige IDs notieren</p>
+            <p className="text-slate-500 mt-1">
+              Gehen Sie zurück zur <strong>Übersicht</strong> der App-Registrierung. Dort finden Sie:
+            </p>
+            <ul className="text-slate-500 mt-1 space-y-1 text-sm">
+              <li>• <strong>Anwendungs-ID (Client-ID)</strong> — wird im nächsten Schritt benötigt</li>
+              <li>• <strong>Verzeichnis-ID (Mandanten-ID)</strong> — wird im nächsten Schritt benötigt</li>
+            </ul>
+          </div>
+        </li>
+        <li className="flex gap-3">
+          <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">5</span>
+          <div>
             <p className="font-medium">API-Berechtigungen setzen</p>
             <p className="text-slate-500 mt-1">
-              API-Berechtigungen → Berechtigung hinzufügen → Microsoft Graph → <strong>Anwendungsberechtigungen</strong>:<br />
-              <code className="bg-slate-100 px-1.5 py-0.5 rounded">Mail.Read</code>,{" "}
-              <code className="bg-slate-100 px-1.5 py-0.5 rounded">Mail.ReadWrite</code>,{" "}
-              <code className="bg-slate-100 px-1.5 py-0.5 rounded">Mail.Send</code>,{" "}
-              <code className="bg-slate-100 px-1.5 py-0.5 rounded">User.Read.All</code><br />
-              → <strong>Administratorzustimmung erteilen</strong>
+              <strong>API-Berechtigungen</strong> (im linken Menü) → <strong>Berechtigung hinzufügen</strong> → <strong>Microsoft Graph</strong> → <strong>Anwendungsberechtigungen</strong>
+            </p>
+            <p className="text-slate-500 mt-1">
+              Suchen und aktivieren Sie diese vier Berechtigungen:
+            </p>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Mail.Read</code>
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Mail.ReadWrite</code>
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">Mail.Send</code>
+              <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">User.Read.All</code>
+            </div>
+            <p className="text-slate-500 mt-2">
+              Dann oben auf <strong>Administratorzustimmung für [Ihre Organisation] erteilen</strong> klicken und bestätigen.
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              Alle vier Berechtigungen sollten danach einen grünen Haken zeigen.
             </p>
           </div>
         </li>
       </ol>
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 mb-4">
-        <strong>Wichtig:</strong> Sie benötigen Azure AD Administrator-Rechte für die Zustimmung.
-        Fragen Sie ggf. Ihren IT-Admin.
+        <strong>Wichtig:</strong> Sie benötigen Azure AD Administrator-Rechte, um die Administratorzustimmung zu erteilen.
+        Nur Benutzer mit der Rolle <em>Globaler Administrator</em> oder <em>Anwendungsadministrator</em> können dies tun.
       </div>
 
       <div className="flex justify-end">
