@@ -189,34 +189,48 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">3</span>
           <div>
-            <p className="font-medium">Client Secret erstellen</p>
+            <p className="font-medium">IDs von der Übersichtsseite notieren</p>
             <p className="text-slate-500 mt-1">
-              Nach der Registrierung öffnet sich die App-Übersicht. Navigieren Sie zu:
+              Nach dem Klick auf "Registrieren" öffnet sich die <strong>Übersicht</strong> Ihrer neuen App.
+              Dort sehen Sie unter <strong>Zusammenfassung</strong> die benötigten IDs:
             </p>
-            <p className="text-slate-500 mt-1">
-              <strong>Zertifikate & Geheimnisse</strong> (im linken Menü) → <strong>Neuer geheimer Clientschlüssel</strong>
-            </p>
-            <p className="text-slate-500 mt-1">
-              Beschreibung: <code className="bg-slate-100 px-1.5 py-0.5 rounded">CoreClaw</code> →
-              Ablauf: z.B. <strong>24 Monate</strong> → <strong>Hinzufügen</strong>
-            </p>
-            <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 text-xs text-red-700">
-              <strong>Achtung:</strong> Den <strong>Wert</strong> (nicht die Geheimnis-ID!) sofort kopieren!
-              Er wird nur einmal angezeigt. Wenn Sie ihn verlieren, müssen Sie ein neues Secret erstellen.
+            <div className="bg-slate-50 border border-slate-200 rounded p-3 mt-2 space-y-1.5 text-sm">
+              <div className="flex items-start gap-2">
+                <span className="text-slate-400 whitespace-nowrap">Anwendungs-ID (Client):</span>
+                <code className="bg-white px-1.5 py-0.5 rounded border text-xs">a31871c3-caab-...</code>
+                <span className="text-xs text-green-600 font-medium">← kopieren</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-slate-400 whitespace-nowrap">Verzeichnis-ID (Mandant):</span>
+                <code className="bg-white px-1.5 py-0.5 rounded border text-xs">f7a9988d-8286-...</code>
+                <span className="text-xs text-green-600 font-medium">← kopieren</span>
+              </div>
             </div>
+            <p className="text-xs text-slate-400 mt-2">
+              Diese beiden Werte werden im nächsten Wizard-Schritt "Zugangsdaten" eingetragen.
+            </p>
           </div>
         </li>
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">4</span>
           <div>
-            <p className="font-medium">Wichtige IDs notieren</p>
+            <p className="font-medium">Client Secret erstellen</p>
             <p className="text-slate-500 mt-1">
-              Gehen Sie zurück zur <strong>Übersicht</strong> der App-Registrierung. Dort finden Sie:
+              Bleiben Sie in der App-Registrierung und klicken Sie im <strong>linken Menü</strong> unter <strong>Verwalten</strong> auf:
             </p>
-            <ul className="text-slate-500 mt-1 space-y-1 text-sm">
-              <li>• <strong>Anwendungs-ID (Client-ID)</strong> — wird im nächsten Schritt benötigt</li>
-              <li>• <strong>Verzeichnis-ID (Mandanten-ID)</strong> — wird im nächsten Schritt benötigt</li>
-            </ul>
+            <p className="text-slate-500 mt-1">
+              <strong>Zertifikate & Geheimnisse</strong> → Reiter <strong>Geheime Clientschlüssel</strong> → <strong>Neuer geheimer Clientschlüssel</strong>
+            </p>
+            <div className="bg-slate-50 border border-slate-200 rounded p-3 mt-2 space-y-1 text-sm">
+              <div>Beschreibung: <code className="bg-white px-1.5 py-0.5 rounded border text-xs">CoreClaw</code></div>
+              <div>Gültig bis: <strong>24 Monate</strong> (empfohlen)</div>
+              <div>Dann auf <strong>Hinzufügen</strong> klicken.</div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 text-xs text-red-700">
+              <strong>Achtung — jetzt sofort handeln:</strong> Nach dem Hinzufügen erscheint eine Tabelle.
+              Kopieren Sie den <strong>Wert</strong> (die lange Zeichenkette) — <strong>nicht</strong> die "Geheimnis-ID"!
+              Der Wert wird <strong>nur einmal</strong> angezeigt. Wenn Sie die Seite verlassen oder neu laden, ist er weg.
+            </div>
           </div>
         </li>
         <li className="flex gap-3">
