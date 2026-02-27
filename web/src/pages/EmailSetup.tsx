@@ -209,18 +209,6 @@ function Step0AzureAd({
             <div className="mt-3 space-y-3">
               <div>
                 <label className="block text-xs font-medium text-slate-600 mb-1">
-                  Verzeichnis-ID (Mandant) — im Azure Portal: "Verzeichnis-ID (Mandant)"
-                </label>
-                <input
-                  type="text"
-                  value={config.tenantId}
-                  onChange={(e) => setConfig({ ...config, tenantId: e.target.value.trim() })}
-                  placeholder="z.B. f7a9988d-8286-4395-9f4a-c38f7a41c599"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600 mb-1">
                   Anwendungs-ID (Client) — im Azure Portal: "Anwendungs-ID (Client)"
                 </label>
                 <input
@@ -228,6 +216,18 @@ function Step0AzureAd({
                   value={config.clientId}
                   onChange={(e) => setConfig({ ...config, clientId: e.target.value.trim() })}
                   placeholder="z.B. a31871c3-caab-45e6-8671-f5f7c098898e"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">
+                  Verzeichnis-ID (Mandant) — im Azure Portal: "Verzeichnis-ID (Mandant)"
+                </label>
+                <input
+                  type="text"
+                  value={config.tenantId}
+                  onChange={(e) => setConfig({ ...config, tenantId: e.target.value.trim() })}
+                  placeholder="z.B. f7a9988d-8286-4395-9f4a-c38f7a41c599"
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
                 />
               </div>
