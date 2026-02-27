@@ -98,11 +98,26 @@
 - [x] IPC Events: draft:created, draft:approved, draft:rejected, draft:edited, correction:recorded
 - [x] 12 neue Tests (Draft-CRUD, Corrections, Lifecycle), insgesamt 65 Tests
 
-## Phase 7: Learning Loop
-- [ ] Track MA corrections (original → edited pairs)
-- [ ] Prompt versioning with A/B testing
-- [ ] Learning Conductor: suggest prompt improvements from patterns
-- [ ] Feedback-driven quality metrics per prompt version
+## Phase 7: Learning Loop ✅
+- [x] Correction-Analyse: Pattern-Detection pro Agent-Typ (`src/learning/analyzer.ts`)
+- [x] Change-Type-Verteilung: minor_edit, major_rewrite, tone_change, factual_fix, rejection
+- [x] Prompt-Verbesserungsvorschläge: automatisch generiert aus Korrektur-Mustern
+  - Ton-Korrekturen → Ton-Anweisungen im Prompt
+  - Umschreibungen → Format/Struktur-Anpassungen
+  - Hohe Ablehnungsrate → fundamentale Prompt-Überarbeitung
+  - Konfidenz-Bewertung (low/medium/high)
+- [x] Prompt-Metriken: usageCount, positiveRating, negativeRating, correctionRate
+- [x] Learning Conductor erweitert:
+  - Reagiert auf `correction:recorded` Events
+  - Buffert Korrekturen, triggert Analyse bei 5+ Korrekturen
+  - Periodische Analyse alle 5 Minuten
+  - Publiziert `conductor:learning-insight` mit Vorschlägen
+- [x] REST API: GET /api/learning/insights, GET /api/learning/suggestions
+- [x] GUI Learning-Seite:
+  - Prompt-Verbesserungsvorschläge mit Konfidenz-Badge
+  - Korrektur-Analyse pro Agent (Korrekturrate, Pattern-Verteilung)
+  - MA-Feedback-Anzeige aus Corrections
+  - Erklärung des Lernprozesses
 
 ## Phase 8: Architect Agent (Self-Modification)
 - [ ] Architect Agent in container (code generation, testing, commit)

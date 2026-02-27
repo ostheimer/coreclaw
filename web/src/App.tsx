@@ -6,6 +6,7 @@ import { Drafts } from "./pages/Drafts";
 import { Notes } from "./pages/Notes";
 import { Activity } from "./pages/Activity";
 import { EmailSetup } from "./pages/EmailSetup";
+import { Learning } from "./pages/Learning";
 import { Skills } from "./pages/Skills";
 import { Settings } from "./pages/Settings";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="drafts" element={<Drafts />} />
           <Route path="notes" element={<Notes />} />
           <Route path="email" element={<EmailSetup />} />
+          <Route path="learning" element={<Learning />} />
           <Route path="activity" element={<Activity events={events} />} />
           <Route path="skills" element={<Skills />} />
           <Route path="settings" element={<Settings />} />

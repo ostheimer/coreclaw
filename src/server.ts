@@ -19,6 +19,7 @@ import {
   editAndApproveDraft,
   getApprovalStats,
 } from "./approval/engine.js";
+import { analyzeCorrections, generatePromptSuggestions } from "./learning/index.js";
 
 const emailConfigStore = new EmailConfigStore();
 let emailSync: EmailSync | null = null;
@@ -186,6 +187,18 @@ function handleApi(req: http.IncomingMessage, res: http.ServerResponse): void {
           json(res, { error: err instanceof Error ? err.message : String(err) }, 500);
         });
       });
+    }
+
+    // ---------- Learning API ----------
+
+    if (route === "GET /api/learning/insights") {
+      const insights = analyzeCorrections();
+      return json(res, insights);
+    }
+
+    if (route === "GET /api/learning/suggestions") {
+      const suggestions = generatePromptSuggestions();
+      return json(res, suggestions);
     }
 
     // ---------- Drafts / Approval API ----------

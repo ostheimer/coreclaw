@@ -27,7 +27,8 @@ export type IpcEventType =
   | "draft:sent"
   | "draft:auto_approved"
   | "draft:quality-reviewed"
-  | "correction:recorded";
+  | "correction:recorded"
+  | "conductor:learning-insight";
 
 export interface IpcEvent<T = unknown> {
   id: string;
