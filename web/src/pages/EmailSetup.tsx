@@ -56,12 +56,33 @@ export function EmailSetup() {
   );
   const { data: status, refresh: refreshStatus } = usePolling<EmailStatus>(statusFetcher, 5000);
 
-  const [step, setStep] = useState(0);
-  const [config, setConfig] = useState<M365Config>(EMPTY_CONFIG);
-  const [showWizard, setShowWizard] = useState(false);
+  const STORAGE_KEY = "coreclaw_email_wizard";
 
-  // Load existing config on mount
+  const loadDraft = (): { step: number; config: M365Config; active: boolean } | null => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw) as { step: number; config: M365Config; active: boolean };
+    } catch { return null; }
+  };
+
+  const draft = loadDraft();
+  const [step, setStep] = useState(draft?.step ?? 0);
+  const [config, setConfig] = useState<M365Config>(draft?.config ?? EMPTY_CONFIG);
+  const [showWizard, setShowWizard] = useState(draft?.active ?? false);
+
+  // Persist wizard state to localStorage on every change
   useEffect(() => {
+    if (showWizard) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, config, active: true }));
+    }
+  }, [step, config, showWizard]);
+
+  const clearDraft = () => localStorage.removeItem(STORAGE_KEY);
+
+  // Load existing config on mount (server-side, only if no local draft)
+  useEffect(() => {
+    if (draft) return;
     void fetch("/api/email/config")
       .then((r) => r.json())
       .then((data: M365Config & { configured: boolean }) => {
@@ -78,6 +99,7 @@ export function EmailSetup() {
         }
       })
       .catch(() => { /* ignore */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!showWizard && status?.configured) {
@@ -127,6 +149,7 @@ export function EmailSetup() {
         <Step4Save
           config={config}
           onDone={() => {
+            clearDraft();
             setShowWizard(false);
             refreshStatus();
           }}
