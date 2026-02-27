@@ -10,7 +10,6 @@ import {
   Play,
   Square,
   Shield,
-  Server,
   FolderOpen,
   RefreshCw,
 } from "lucide-react";
@@ -44,7 +43,6 @@ const EMPTY_CONFIG: M365Config = {
 
 const STEPS = [
   { title: "Azure AD App", icon: Shield },
-  { title: "Zugangsdaten", icon: Server },
   { title: "Verbindung testen", icon: RefreshCw },
   { title: "Postfach wählen", icon: Mail },
   { title: "Ordner & Optionen", icon: FolderOpen },
@@ -121,28 +119,37 @@ export function EmailSetup() {
       </div>
 
       {/* Step Content */}
-      {step === 0 && <Step0AzureAd onNext={() => setStep(1)} />}
-      {step === 1 && <Step1Credentials config={config} setConfig={setConfig} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
-      {step === 2 && <Step2Test config={config} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
-      {step === 3 && <Step3Mailbox config={config} setConfig={setConfig} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
-      {step === 4 && <Step4Options config={config} setConfig={setConfig} onNext={() => setStep(5)} onBack={() => setStep(3)} />}
-      {step === 5 && (
-        <Step5Save
+      {step === 0 && <Step0AzureAd config={config} setConfig={setConfig} onNext={() => setStep(1)} />}
+      {step === 1 && <Step1Test config={config} onNext={() => setStep(2)} onBack={() => setStep(0)} />}
+      {step === 2 && <Step2Mailbox config={config} setConfig={setConfig} onNext={() => setStep(3)} onBack={() => setStep(1)} />}
+      {step === 3 && <Step3Options config={config} setConfig={setConfig} onNext={() => setStep(4)} onBack={() => setStep(2)} />}
+      {step === 4 && (
+        <Step4Save
           config={config}
           onDone={() => {
             setShowWizard(false);
             refreshStatus();
           }}
-          onBack={() => setStep(4)}
+          onBack={() => setStep(3)}
         />
       )}
     </div>
   );
 }
 
-// ---------- Step 0: Azure AD Anleitung ----------
+// ---------- Step 0: Azure AD Anleitung + Zugangsdaten inline ----------
 
-function Step0AzureAd({ onNext }: { onNext: () => void }) {
+function Step0AzureAd({
+  config,
+  setConfig,
+  onNext,
+}: {
+  config: M365Config;
+  setConfig: (c: M365Config) => void;
+  onNext: () => void;
+}) {
+  const valid = config.tenantId.length > 10 && config.clientId.length > 10 && config.clientSecret.length > 5;
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
       <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 1: Azure AD App registrieren</h2>
@@ -151,7 +158,8 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
         Das ist ein einmaliger Vorgang.
       </p>
 
-      <ol className="space-y-4 text-sm text-slate-700 mb-6">
+      <ol className="space-y-6 text-sm text-slate-700 mb-6">
+        {/* 1. Azure Portal öffnen */}
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">1</span>
           <div>
@@ -166,6 +174,8 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
             </a>
           </div>
         </li>
+
+        {/* 2. Registrierung erstellen */}
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">2</span>
           <div>
@@ -179,41 +189,62 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
               <span className="text-xs text-slate-400">(CoreClaw greift nur auf Postfächer in Ihrer eigenen Organisation zu)</span>
             </p>
             <p className="text-slate-500 mt-1">
-              Umleitungs-URI: <strong>leer lassen</strong> (nicht benötigt — CoreClaw verwendet den Server-zu-Server-Flow ohne Browser-Login)
+              Umleitungs-URI: <strong>leer lassen</strong> (Server-zu-Server-Flow ohne Browser-Login)
             </p>
             <p className="text-slate-500 mt-1">
               Dann auf <strong>Registrieren</strong> klicken.
             </p>
           </div>
         </li>
+
+        {/* 3. IDs direkt einfügen */}
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">3</span>
-          <div>
-            <p className="font-medium">IDs von der Übersichtsseite notieren</p>
+          <div className="flex-1">
+            <p className="font-medium">IDs von der Übersichtsseite einfügen</p>
             <p className="text-slate-500 mt-1">
-              Nach dem Klick auf "Registrieren" öffnet sich die <strong>Übersicht</strong> Ihrer neuen App.
-              Dort sehen Sie unter <strong>Zusammenfassung</strong> die benötigten IDs:
+              Nach dem Registrieren öffnet sich die <strong>Übersicht</strong>.
+              Kopieren Sie die Werte aus der <strong>Zusammenfassung</strong> direkt hier hinein:
             </p>
-            <div className="bg-slate-50 border border-slate-200 rounded p-3 mt-2 space-y-1.5 text-sm">
-              <div className="flex items-start gap-2">
-                <span className="text-slate-400 whitespace-nowrap">Anwendungs-ID (Client):</span>
-                <code className="bg-white px-1.5 py-0.5 rounded border text-xs">a31871c3-caab-...</code>
-                <span className="text-xs text-green-600 font-medium">← kopieren</span>
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">
+                  Verzeichnis-ID (Mandant) — im Azure Portal: "Verzeichnis-ID (Mandant)"
+                </label>
+                <input
+                  type="text"
+                  value={config.tenantId}
+                  onChange={(e) => setConfig({ ...config, tenantId: e.target.value.trim() })}
+                  placeholder="z.B. f7a9988d-8286-4395-9f4a-c38f7a41c599"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                />
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-slate-400 whitespace-nowrap">Verzeichnis-ID (Mandant):</span>
-                <code className="bg-white px-1.5 py-0.5 rounded border text-xs">f7a9988d-8286-...</code>
-                <span className="text-xs text-green-600 font-medium">← kopieren</span>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 mb-1">
+                  Anwendungs-ID (Client) — im Azure Portal: "Anwendungs-ID (Client)"
+                </label>
+                <input
+                  type="text"
+                  value={config.clientId}
+                  onChange={(e) => setConfig({ ...config, clientId: e.target.value.trim() })}
+                  placeholder="z.B. a31871c3-caab-45e6-8671-f5f7c098898e"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                />
               </div>
             </div>
-            <p className="text-xs text-slate-400 mt-2">
-              Diese beiden Werte werden im nächsten Wizard-Schritt "Zugangsdaten" eingetragen.
-            </p>
+            {config.tenantId.length > 10 && config.clientId.length > 10 && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-green-600">
+                <CheckCircle2 size={12} />
+                IDs eingefügt
+              </div>
+            )}
           </div>
         </li>
+
+        {/* 4. Client Secret */}
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">4</span>
-          <div>
+          <div className="flex-1">
             <p className="font-medium">Client Secret erstellen</p>
             <p className="text-slate-500 mt-1">
               Bleiben Sie in der App-Registrierung und klicken Sie im <strong>linken Menü</strong> unter <strong>Verwalten</strong> auf:
@@ -227,12 +258,33 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
               <div>Dann auf <strong>Hinzufügen</strong> klicken.</div>
             </div>
             <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 text-xs text-red-700">
-              <strong>Achtung — jetzt sofort handeln:</strong> Nach dem Hinzufügen erscheint eine Tabelle.
+              <strong>Achtung:</strong> Nach dem Hinzufügen erscheint eine Tabelle.
               Kopieren Sie den <strong>Wert</strong> (die lange Zeichenkette) — <strong>nicht</strong> die "Geheimnis-ID"!
-              Der Wert wird <strong>nur einmal</strong> angezeigt. Wenn Sie die Seite verlassen oder neu laden, ist er weg.
+              Der Wert wird <strong>nur einmal</strong> angezeigt.
             </div>
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-slate-600 mb-1">
+                Geheimer Clientschlüssel (Wert) — hier einfügen:
+              </label>
+              <input
+                type="password"
+                value={config.clientSecret}
+                onChange={(e) => setConfig({ ...config, clientSecret: e.target.value })}
+                placeholder="Den Wert aus der Tabelle hier einfügen"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+              />
+              <p className="text-xs text-slate-400 mt-1">Wird lokal verschlüsselt gespeichert — niemals im Klartext.</p>
+            </div>
+            {config.clientSecret.length > 5 && (
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-green-600">
+                <CheckCircle2 size={12} />
+                Secret eingefügt
+              </div>
+            )}
           </div>
         </li>
+
+        {/* 5. API Berechtigungen */}
         <li className="flex gap-3">
           <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold">5</span>
           <div>
@@ -264,96 +316,32 @@ function Step0AzureAd({ onNext }: { onNext: () => void }) {
         Nur Benutzer mit der Rolle <em>Globaler Administrator</em> oder <em>Anwendungsadministrator</em> können dies tun.
       </div>
 
+      {/* Validation summary */}
+      {!valid && (config.tenantId || config.clientId || config.clientSecret) && (
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-500 mb-4">
+          Noch fehlend:{" "}
+          {config.tenantId.length <= 10 && <span className="text-amber-600 font-medium">Verzeichnis-ID </span>}
+          {config.clientId.length <= 10 && <span className="text-amber-600 font-medium">Anwendungs-ID </span>}
+          {config.clientSecret.length <= 5 && <span className="text-amber-600 font-medium">Client Secret </span>}
+        </div>
+      )}
+
       <div className="flex justify-end">
-        <button onClick={onNext} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-          Weiter <ChevronRight size={14} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ---------- Step 1: Zugangsdaten eingeben ----------
-
-function Step1Credentials({
-  config,
-  setConfig,
-  onNext,
-  onBack,
-}: {
-  config: M365Config;
-  setConfig: (c: M365Config) => void;
-  onNext: () => void;
-  onBack: () => void;
-}) {
-  const valid = config.tenantId.length > 10 && config.clientId.length > 10 && config.clientSecret.length > 5;
-
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 2: Zugangsdaten eingeben</h2>
-      <p className="text-sm text-slate-500 mb-4">
-        Diese Werte finden Sie auf der Übersichtsseite Ihrer Azure AD App-Registrierung.
-      </p>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Verzeichnis-ID (Tenant ID)
-          </label>
-          <input
-            type="text"
-            value={config.tenantId}
-            onChange={(e) => setConfig({ ...config, tenantId: e.target.value.trim() })}
-            placeholder="z.B. 12345678-abcd-efgh-ijkl-123456789012"
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Anwendungs-ID (Client ID)
-          </label>
-          <input
-            type="text"
-            value={config.clientId}
-            onChange={(e) => setConfig({ ...config, clientId: e.target.value.trim() })}
-            placeholder="z.B. abcdef12-3456-7890-abcd-ef1234567890"
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Geheimer Clientschlüssel (Client Secret)
-          </label>
-          <input
-            type="password"
-            value={config.clientSecret}
-            onChange={(e) => setConfig({ ...config, clientSecret: e.target.value })}
-            placeholder="Aus Zertifikate & Geheimnisse kopiert"
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
-          />
-          <p className="text-xs text-slate-400 mt-1">Wird lokal verschlüsselt gespeichert — niemals im Klartext.</p>
-        </div>
-      </div>
-
-      <div className="flex justify-between mt-6">
-        <button onClick={onBack} className="flex items-center gap-1 px-4 py-2 text-sm text-slate-600 hover:text-slate-800">
-          <ChevronLeft size={14} /> Zurück
-        </button>
         <button
           onClick={onNext}
           disabled={!valid}
           className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Weiter <ChevronRight size={14} />
+          Weiter — Verbindung testen <ChevronRight size={14} />
         </button>
       </div>
     </div>
   );
 }
 
-// ---------- Step 2: Verbindungstest ----------
+// ---------- Step 1: Verbindungstest ----------
 
-function Step2Test({
+function Step1Test({
   config,
   onNext,
   onBack,
@@ -385,7 +373,7 @@ function Step2Test({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 3: Verbindung testen</h2>
+      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 2: Verbindung testen</h2>
       <p className="text-sm text-slate-500 mb-4">
         Jetzt prüfen wir, ob CoreClaw sich bei Microsoft 365 anmelden kann.
       </p>
@@ -455,9 +443,9 @@ function Step2Test({
   );
 }
 
-// ---------- Step 3: Postfach wählen ----------
+// ---------- Step 2: Postfach wählen ----------
 
-function Step3Mailbox({
+function Step2Mailbox({
   config,
   setConfig,
   onNext,
@@ -501,7 +489,7 @@ function Step3Mailbox({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 4: Postfach auswählen</h2>
+      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 3: Postfach auswählen</h2>
       <p className="text-sm text-slate-500 mb-4">
         Welches Postfach soll CoreClaw überwachen? Typisch: ein Shared Mailbox wie <code className="bg-slate-100 px-1 py-0.5 rounded">support@firma.com</code>
       </p>
@@ -566,9 +554,9 @@ function Step3Mailbox({
   );
 }
 
-// ---------- Step 4: Ordner & Optionen ----------
+// ---------- Step 3: Ordner & Optionen ----------
 
-function Step4Options({
+function Step3Options({
   config,
   setConfig,
   onNext,
@@ -600,7 +588,7 @@ function Step4Options({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 5: Ordner & Optionen</h2>
+      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 4: Ordner & Optionen</h2>
 
       <div className="space-y-4">
         <div>
@@ -674,9 +662,9 @@ function Step4Options({
   );
 }
 
-// ---------- Step 5: Speichern & Starten ----------
+// ---------- Step 4: Speichern & Starten ----------
 
-function Step5Save({
+function Step4Save({
   config,
   onDone,
   onBack,
@@ -710,7 +698,7 @@ function Step5Save({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 6: Zusammenfassung & Start</h2>
+      <h2 className="text-lg font-semibold text-slate-900 mb-4">Schritt 5: Zusammenfassung & Start</h2>
 
       <div className="bg-slate-50 rounded-lg p-4 text-sm space-y-2 mb-6">
         <div className="flex justify-between">
