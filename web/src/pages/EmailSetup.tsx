@@ -259,7 +259,7 @@ function Step0AzureAd({
             </div>
             <div className="bg-red-50 border border-red-200 rounded p-2 mt-2 text-xs text-red-700">
               <strong>Achtung:</strong> Nach dem Hinzufügen erscheint eine Tabelle.
-              Kopieren Sie den <strong>Wert</strong> (die lange Zeichenkette) — <strong>nicht</strong> die "Geheimnis-ID"!
+              Kopieren Sie den <strong>Wert</strong> (die lange Zeichenkette) — <strong>nicht</strong> die "Geheime ID"!
               Der Wert wird <strong>nur einmal</strong> angezeigt.
             </div>
             <div className="mt-3">
@@ -378,23 +378,10 @@ function Step1Test({
         Jetzt prüfen wir, ob CoreClaw sich bei Microsoft 365 anmelden kann.
       </p>
 
-      {!config.mailbox && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-slate-700 mb-1">
-            Zu testende E-Mail-Adresse
-          </label>
-          <input
-            type="email"
-            value={config.mailbox}
-            readOnly
-            placeholder="Wird im nächsten Schritt gewählt"
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-slate-50 font-mono"
-          />
-          <p className="text-xs text-slate-400 mt-1">
-            Der Verbindungstest prüft nur die Azure AD Authentifizierung — kein Postfach nötig.
-          </p>
-        </div>
-      )}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 mb-4">
+        Dieser Test prüft, ob CoreClaw sich mit Ihren Azure AD Zugangsdaten anmelden kann.
+        Das Postfach wird im nächsten Schritt gewählt.
+      </div>
 
       <button
         onClick={() => void runTest()}

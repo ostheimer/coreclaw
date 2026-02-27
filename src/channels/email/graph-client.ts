@@ -56,16 +56,24 @@ export class GraphClient {
 
   async testConnection(): Promise<M365ConnectionTest> {
     try {
-      const user = await this.getUser(this.config.mailbox);
-      if (!user) {
-        return { success: false, error: `Mailbox "${this.config.mailbox}" not found` };
+      // Step 1: verify we can get a token (tests credentials)
+      await this.getToken();
+
+      // Step 2: if mailbox is set, verify it exists
+      if (this.config.mailbox) {
+        const user = await this.getUser(this.config.mailbox);
+        if (!user) {
+          return { success: false, error: `Postfach "${this.config.mailbox}" nicht gefunden. Prüfen Sie die E-Mail-Adresse.` };
+        }
+        return {
+          success: true,
+          mailbox: user.mail ?? user.userPrincipalName,
+          displayName: user.displayName,
+        };
       }
 
-      return {
-        success: true,
-        mailbox: user.mail ?? user.userPrincipalName,
-        displayName: user.displayName,
-      };
+      // No mailbox yet — just confirm auth works
+      return { success: true };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("AADSTS")) {
