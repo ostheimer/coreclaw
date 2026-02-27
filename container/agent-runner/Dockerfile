@@ -2,27 +2,24 @@ FROM node:22-alpine AS base
 
 WORKDIR /app
 
-# Install only production dependencies
 COPY package.json ./
 RUN npm install --omit=dev --ignore-scripts
 
 FROM node:22-alpine AS runner
 
-# Non-root user for security
 RUN addgroup -g 1001 -S agentgroup && \
     adduser -u 1001 -S agentuser -G agentgroup
 
 WORKDIR /app
 
 COPY --from=base /app/node_modules ./node_modules
-COPY container/agent-runner/agent.ts ./agent.ts
-COPY src/types.ts ./src/types.ts
-COPY tsconfig.json ./
+COPY agent.ts ./agent.ts
 
-# Compile TypeScript
-RUN npm install --save-dev typescript tsx && \
-    npx tsc --noEmit || true
+RUN npm install --save-dev tsx && \
+    mkdir -p /workspace/ipc/input /workspace/ipc/output && \
+    chown -R agentuser:agentgroup /workspace
 
 USER agentuser
 
-ENTRYPOINT ["node", "--import", "tsx/esm", "agent.ts"]
+# Agent reads ContainerInput from stdin, writes output with sentinel markers to stdout
+ENTRYPOINT ["npx", "tsx", "agent.ts"]
