@@ -19,6 +19,19 @@
 - [x] All six conductor skeletons with IPC integration
 - [x] 23 passing unit tests
 
+## Phase 1.5: GUI — Web Interface ✅
+- [x] HTTP API server integrated in host process (`src/server.ts`)
+- [x] WebSocket for real-time events (IPC bus → browser)
+- [x] React + Vite + Tailwind frontend (`web/`)
+- [x] Dashboard page (task stats, message counts, review counts)
+- [x] Inbox page (messages by status, expandable detail view)
+- [x] Drafts page (agent outputs, approve/reject workflow)
+- [x] Notes page (manual input: call notes, case references)
+- [x] Activity page (real-time event stream via WebSocket)
+- [x] Settings page (channels, data sources, agents — placeholder)
+- [x] Full API: GET/POST messages, tasks, notes, status
+- [x] Cross-platform: runs on Windows, macOS, Linux via `npm run dev`
+
 ## Phase 2: First Channel — Email
 - [ ] Email channel adapter (Gmail API / IMAP)
 - [ ] Incoming email processing and storage
@@ -26,47 +39,51 @@
 - [ ] Thread/conversation context tracking
 - [ ] Basic email triage (Inbox Conductor — rule-based)
 
-## Phase 3: Conductor Framework
-- [x] Conductor interface and base implementation (`BaseConductor`)
-- [x] Inbox Conductor (triage, categorize, route — rule-based)
-- [x] Quality Conductor (output review, guard rails — host-level)
-- [x] Chief Conductor (status aggregation, briefings, escalation)
-- [x] Workflow Conductor (multi-step task planning, parallel steps)
-- [x] Context Conductor (thread history retrieval)
-- [x] Learning Conductor (feedback collection, prompt metric tracking)
-- [ ] Full agent-based Quality Conductor (container execution for complex review)
-- [ ] RAG integration for Context Conductor
-- [ ] Prompt improvement suggestions from Learning Conductor
+## Phase 3: Vector Store + Context
+- [ ] sqlite-vec integration for embedding storage
+- [ ] Embedding generation for messages and notes
+- [ ] Context Conductor: semantic search for relevant past conversations
+- [ ] Learning Conductor: correction embeddings for few-shot prompt injection
 
-## Phase 4: Approval Workflows
-- [ ] Draft mode (agent creates draft, human confirms)
+## Phase 4: Knowledge Sources
+- [ ] Knowledge Source interface (pluggable data connectors)
+- [ ] WordPress adapter (REST API, WP-CLI, MCP)
+- [ ] CRM adapter skeleton
+- [ ] Context Conductor: enrich agent context with external data
+
+## Phase 5: Approval Workflows
+- [ ] Draft mode (agent creates draft, human confirms via GUI)
 - [ ] Auto-approve rules (pattern matching for routine responses)
 - [ ] Escalation logic (uncertainty detection → route to human)
-- [ ] Review queue (pending approvals with priority)
+- [ ] Review queue with priority sorting in Drafts page
 
-## Phase 5: Dashboard / Unified Inbox
-- [ ] CLI dashboard (task status, agent outputs, pending reviews)
-- [ ] Web UI (unified inbox with filtering, priorities, approval actions)
-- [ ] Status API for external integrations
+## Phase 6: Learning Loop
+- [ ] Track MA corrections (original → edited pairs)
+- [ ] Prompt versioning with A/B testing
+- [ ] Learning Conductor: suggest prompt improvements from patterns
+- [ ] Feedback-driven quality metrics per prompt version
 
-## Phase 6: Additional Channels
+## Phase 7: Self-Modification Engine
+- [ ] Architect Agent (code generation, testing, commit)
+- [ ] Git integration (auto-commit, push to user's repo)
+- [ ] "Connect WordPress" flow via GUI → generates adapter code
+- [ ] Test runner for generated code
+- [ ] Restart mechanism after code changes
+- [ ] Rollback on failure (git revert)
+
+## Phase 8: Additional Channels
 - [ ] Microsoft Teams adapter
 - [ ] Slack adapter
 - [ ] Google Chat adapter
 - [ ] Webhook/API adapter (generic inbound/outbound)
 - [ ] Ticketing system adapter (Jira, Zendesk — via skills)
 
-## Phase 7: Prompt Management
-- [ ] Prompt versioning (DB-backed, with activation timestamps) — schema ready
-- [ ] A/B prompt testing framework
-- [ ] Feedback-driven prompt improvement (Learning Conductor)
-- [ ] Prompt performance metrics (response quality, correction rate) — schema ready
-
-## Phase 8: Advanced Features
+## Phase 9: Advanced Features
+- [ ] Multi-user auth and roles (MA, Team Lead, Admin)
 - [ ] RAG integration (Context Conductor with vector DB)
 - [ ] Multi-tenant support (multiple teams/departments)
 - [ ] Audit logging (who, when, which prompt version, which data)
-- [ ] Agent-to-agent coordination (shared results, cross-conductor communication)
+- [ ] Agent-to-agent coordination via conductors
 - [ ] Compliance conductor (industry-specific rules)
 
 ## Future Considerations
@@ -74,3 +91,4 @@
 - [ ] Voice channel support
 - [ ] Mobile companion app
 - [ ] Self-hosted vs. cloud deployment options
+- [ ] Cloudflare Workers / Vercel deployment

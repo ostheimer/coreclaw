@@ -4,14 +4,17 @@
   "description": "Business-grade AI agent orchestration. Multiple conductors, structured workflows, container isolation.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "node --experimental-sqlite --import tsx/esm src/index.ts",
+    "build": "tsc && npm run build:web",
+    "build:web": "cd web && npm run build",
+    "dev": "npx tsx src/index.ts",
+    "dev:web": "cd web && npm run dev",
     "start": "node --experimental-sqlite dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit",
+    "setup": "npm install && cd web && npm install",
     "docker:build": "docker build -t coreclaw-agent ./container/agent-runner"
   },
   "keywords": [
@@ -30,11 +33,13 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "dotenv": "^16.4.5",
+    "ws": "^8.19.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",

@@ -3,6 +3,7 @@ import { TaskQueue } from "./queue.js";
 import { runInContainer } from "./container-runner.js";
 import { taskRepo } from "./db.js";
 import { ipcBus } from "./ipc.js";
+import { startServer } from "./server.js";
 import {
   ChiefConductor,
   InboxConductor,
@@ -69,6 +70,8 @@ ipcBus.subscribe<{ task: Task; routed?: boolean }>("task:created", (event) => {
 
 // ---------- Startup & shutdown ----------
 
+let httpServer: ReturnType<typeof startServer> | null = null;
+
 async function start(): Promise<void> {
   console.log("[CoreClaw] Starting...");
 
@@ -81,12 +84,18 @@ async function start(): Promise<void> {
     queue.enqueue(task);
   }
 
+  httpServer = startServer();
+
   console.log(`[CoreClaw] Started. Queue: ${queue.size} pending, ${queue.activeCount} running`);
 }
 
 async function shutdown(): Promise<void> {
   console.log("[CoreClaw] Shutting down...");
   queue.pause();
+
+  if (httpServer) {
+    httpServer.close();
+  }
 
   for (const conductor of conductors) {
     await conductor.stop();
