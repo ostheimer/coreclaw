@@ -9,6 +9,7 @@ import { EmailSetup } from "./pages/EmailSetup";
 import { Learning } from "./pages/Learning";
 import { Skills } from "./pages/Skills";
 import { Settings } from "./pages/Settings";
+import { Personality } from "./pages/Personality";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="email" element={<EmailSetup />} />
           <Route path="learning" element={<Learning />} />
           <Route path="activity" element={<Activity events={events} />} />
+          <Route path="personality" element={<Personality />} />
           <Route path="skills" element={<Skills />} />
           <Route path="settings" element={<Settings />} />
         </Route>

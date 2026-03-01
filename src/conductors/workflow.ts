@@ -56,15 +56,24 @@ export class WorkflowConductor extends BaseConductor {
   private async handleTaskCompleted(event: IpcEvent<TaskCompletedPayload>): Promise<void> {
     const { task, output } = event.payload;
 
-    // Create a draft for review if the agent type produces outgoing content
-    if (WorkflowConductor.DRAFT_AGENT_TYPES.has(task.type) && output.outputs.length > 0) {
-      const channel = task.sourceChannel ?? "email";
-      const draft = createDraft(task, output, channel);
+    if (!WorkflowConductor.DRAFT_AGENT_TYPES.has(task.type) || output.outputs.length === 0) return;
 
-      this.publish("conductor:review-request", { task, output }, "quality");
-
-      console.log(`[workflow] Draft ${draft.id} created for completed task ${task.id}`);
+    if (this.isSandbox()) {
+      // In sandbox mode: log what would have happened, but don't create a draft
+      console.log(`[workflow] SANDBOX: Would create draft for task ${task.id} (${task.type}) — skipped`);
+      this.publish("conductor:sandbox-dryrun", {
+        task,
+        output,
+        wouldHave: "create_draft",
+        reason: "agent produced outgoing content",
+      });
+      return;
     }
+
+    const channel = task.sourceChannel ?? "email";
+    const draft = createDraft(task, output, channel);
+    this.publish("conductor:review-request", { task, output }, "quality");
+    console.log(`[workflow] Draft ${draft.id} created for completed task ${task.id}`);
   }
 
   private async handleTaskCreated(event: IpcEvent<TaskCreatedPayload>): Promise<void> {

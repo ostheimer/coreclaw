@@ -11,6 +11,7 @@ import {
   Settings,
   Wifi,
   WifiOff,
+  Bot,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { to: "/notes", icon: Phone, label: "Notizen" },
   { to: "/email", icon: Mail, label: "E-Mail" },
   { to: "/learning", icon: Brain, label: "Lernen" },
+  { to: "/personality", icon: Bot, label: "Persönlichkeit" },
   { to: "/activity", icon: Activity, label: "Aktivität" },
   { to: "/skills", icon: Puzzle, label: "Skills" },
   { to: "/settings", icon: Settings, label: "Einstellungen" },

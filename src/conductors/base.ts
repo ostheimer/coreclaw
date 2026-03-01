@@ -1,6 +1,8 @@
 import { ipcBus } from "../ipc.js";
 import type { IpcEvent, IpcEventType } from "../ipc.js";
 import type { ConductorRole, ConductorResult } from "../types.js";
+import { loadPersonality, generateSystemPrompt } from "../personality/index.js";
+import type { OperationMode } from "../personality/index.js";
 
 export interface ConductorOptions {
   rulesPath?: string;
@@ -45,6 +47,26 @@ export abstract class BaseConductor {
   }
 
   protected abstract registerSubscriptions(): void;
+
+  /** Returns the current system prompt generated from personality config. */
+  protected getSystemPrompt(): string {
+    return generateSystemPrompt(loadPersonality());
+  }
+
+  /** Returns the current operation mode. */
+  protected getMode(): OperationMode {
+    return loadPersonality().mode;
+  }
+
+  /** Returns true if the current mode allows autonomous actions. */
+  protected canAct(): boolean {
+    return this.getMode() !== "sandbox";
+  }
+
+  /** Returns true if the current mode is sandbox (read-only, dry-run only). */
+  protected isSandbox(): boolean {
+    return this.getMode() === "sandbox";
+  }
 
   protected makeResult(
     success: boolean,

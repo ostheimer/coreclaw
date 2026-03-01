@@ -20,6 +20,8 @@ import {
   getApprovalStats,
 } from "./approval/engine.js";
 import { analyzeCorrections, generatePromptSuggestions } from "./learning/index.js";
+import { loadPersonality, savePersonality, generateSystemPrompt } from "./personality/index.js";
+import type { Personality } from "./personality/index.js";
 
 const emailConfigStore = new EmailConfigStore();
 let emailSync: EmailSync | null = null;
@@ -199,6 +201,32 @@ function handleApi(req: http.IncomingMessage, res: http.ServerResponse): void {
     if (route === "GET /api/learning/suggestions") {
       const suggestions = generatePromptSuggestions();
       return json(res, suggestions);
+    }
+
+    // ---------- Personality API ----------
+
+    if (route === "GET /api/personality") {
+      return json(res, loadPersonality());
+    }
+
+    if (route === "GET /api/personality/prompt") {
+      const p = loadPersonality();
+      return json(res, { prompt: generateSystemPrompt(p) });
+    }
+
+    if (route === "PUT /api/personality") {
+      return readBody(req, (body) => {
+        try {
+          const partial = JSON.parse(body) as Partial<Personality>;
+          const current = loadPersonality();
+          const updated: Personality = { ...current, ...partial, updatedAt: new Date().toISOString() };
+          savePersonality(updated);
+          ipcBus.publish("conductor:personality-updated", "server", updated);
+          json(res, updated);
+        } catch (err) {
+          json(res, { error: err instanceof Error ? err.message : String(err) }, 400);
+        }
+      });
     }
 
     // ---------- Drafts / Approval API ----------
