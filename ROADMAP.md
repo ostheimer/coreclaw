@@ -214,12 +214,26 @@ NanoClaw hat keine formalen Modi — CoreClaw schon:
 - [ ] Restart mechanism after code changes
 - [ ] Rollback on failure (git revert)
 
-## Phase 12: Additional Channels (als Skills)
-- [ ] Microsoft Teams
-- [ ] Slack
-- [ ] Google Chat
-- [ ] Webhook/API (generisch inbound/outbound)
-- [ ] Ticketing: Jira, Zendesk
+## Phase 12: Channels als Skills
+
+Alle Channels (außer M365 Email als Referenz-Implementation) sind Skills.
+Sie implementieren das Channel-Interface und werden über die GUI aktiviert und konfiguriert.
+
+### Business Messenger
+- [ ] **Microsoft Teams** — Graph API, Nachrichten lesen/senden, Channel-Kontext
+- [ ] **Slack** — Bot Token, Channels + DMs lesen/senden
+- [ ] **Google Chat** — Pub/Sub Webhook + REST API, Spaces + DMs
+- [ ] **WhatsApp Business** — Meta Cloud API (offizielle Business API, nicht Baileys)
+- [ ] **Telegram** — Bot API via `grammy`, Gruppen + DMs
+
+### Ticketing & Support
+- [ ] **Jira** — Issues lesen/erstellen/kommentieren
+- [ ] **Zendesk** — Tickets lesen/beantworten
+- [ ] **Webhook** — generisch inbound/outbound (HTTP)
+
+> **Hinweis WhatsApp:** Persönliches WhatsApp (Baileys) ist ToS-widrig für Business-Einsatz.
+> CoreClaw setzt auf die offizielle WhatsApp Business API (Meta Cloud API).
+> Telegram ist unkomplizierter — Bot API ohne Einschränkungen für Business-Bots.
 
 ## Phase 13: Advanced Features
 - [ ] Multi-user auth and roles (MA, Team Lead, Admin)
@@ -230,8 +244,8 @@ NanoClaw hat keine formalen Modi — CoreClaw schon:
 - [ ] Compliance conductor (industry-specific rules)
 
 ## Future Considerations
-- [ ] Consumer channel skills (WhatsApp, Telegram, Discord — via skills, not core)
-- [ ] Voice channel support
+- [ ] Voice channel support (Telefon-Transkription → Case-Notizen)
 - [ ] Mobile companion app
 - [ ] Self-hosted vs. cloud deployment options
 - [ ] Cloudflare Workers / Vercel deployment
+- [ ] Discord (Community/Gaming, kein Business-Fokus — optionaler Skill)
