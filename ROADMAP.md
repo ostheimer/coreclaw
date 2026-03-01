@@ -62,6 +62,62 @@
 - [x] Thread-Tracking via Microsoft Graph `conversationId`
 - [x] 11 neue Tests (Config-Verschlüsselung, Triage-Regeln), insgesamt 53 Tests
 
+## Architektur-Entscheidungen (festgehalten Feb 2026)
+
+### Allgemeinheit — Kein Use-Case-Code im Core
+CoreClaw ist generisch. Use-Case-spezifische Logik (WordPress, Rechnungen, Cases) gehört
+ausschließlich in Skills/Plugins. Der Core kennt nur generische Konzepte:
+- Nachrichten, Aufgaben, Drafts, Korrekturen
+- Channels (M365 Email, Teams, Slack, …)
+- Skills (externe System-Integrationen)
+- Conductors (Chief, Inbox, Quality, Workflow, Context, Learning)
+
+### Persönlichkeits-System (Personality)
+Nicht wie NanoClaw (Freitext-CLAUDE.md pro Gruppe), sondern strukturiert und GUI-konfigurierbar:
+```
+data/personality.json
+├── name          — Name des Assistenten (z.B. "CoreClaw", "Alex", …)
+├── role          — Rolle in einem Satz (z.B. "Freundlicher Support-Assistent")
+├── tone          — Tonalität: formell | professionell | freundlich | locker
+├── language      — Standardsprache: de | en | …
+├── traits[]      — Charaktereigenschaften (z.B. "präzise", "empathisch")
+├── rules[]       — Explizite Verhaltensregeln (z.B. "Immer mit Grußformel schließen")
+└── systemPrompt  — Auto-generiert aus den obigen Feldern
+```
+Ziel: MA kann den "Charakter" über die GUI anpassen, ohne Prompts zu kennen.
+
+### Runtime-Plugin-System (Skills)
+Kein Code-Transform-Ansatz wie NanoClaw (`.claude/skills/` + git-merge), sondern
+ein **Runtime-Plugin-System** für Büro-MAs ohne Shell-Kenntnisse:
+- Skills werden über GUI aktiviert (kein Terminal, kein Git)
+- Jeder Skill definiert: Capabilities, Config-Schema (GUI-Wizard), Sandbox-Verhalten
+- Skills erhalten durch Aktivierung Zugriff auf externe Systeme
+- Vorgefertigte Skills: M365 Email (✅), WordPress, Google Drive, Dropbox, OneDrive, …
+- Benutzerdefinierte Skills: via Architect Agent generiert (Phase 8)
+
+### Betriebsmodi (Operation Modes)
+NanoClaw hat keine formalen Modi — CoreClaw schon:
+
+| Modus | Beschreibung |
+|-------|-------------|
+| **Sandbox** | Nur lesen. Dry-Run: protokolliert was er tun *würde*, ohne es zu tun. Beobachtet MA-Verhalten und sammelt Muster. |
+| **Vorschlag** | Erstellt Drafts zur MA-Prüfung. Skills können gelesen werden, aber noch nicht schreiben. |
+| **Assistenz** | Routine-Tasks auto-approve, Komplexes zur MA-Prüfung. Skills voll aktiv. |
+| **Autonomie** | Alles auto-approve, nur Ausnahmen und Eskalationen zum MA. |
+
+**Sandbox-Spezifikation:**
+- Alle Skills implementieren `dryRun(input): Promise<string>` — beschreibt was sie tun würden
+- E-Mail-Sync läuft, aber kein Sending, kein Schreiben
+- Learning Conductor beobachtet MA-Antworten (Gesendet-Ordner) und vergleicht mit Dry-Run-Output
+- Erkannte Muster → Skill-Vorschläge an Admin: "CoreClaw würde oft WordPress-Cases nachsehen. Soll ich den WordPress-Skill vorschlagen?"
+
+### Channels als Skills (nicht Core)
+- M365 Email ist der einzige Built-in Channel (Referenz-Implementation)
+- Microsoft Teams, Slack, Google Chat, Webhook → Skills
+- Consumer-Channels (WhatsApp, Telegram, Discord) → optionale Skills, nicht Core
+
+---
+
 ## Phase 4: Vector Store + Context
 - [ ] sqlite-vec integration for embedding storage
 - [ ] Embedding generation for messages and notes
@@ -119,22 +175,53 @@
   - MA-Feedback-Anzeige aus Corrections
   - Erklärung des Lernprozesses
 
-## Phase 8: Architect Agent (Self-Modification)
+## Phase 8: Personality System
+- [ ] `data/personality.json` Schema (name, role, tone, language, traits, rules)
+- [ ] System-Prompt-Generator aus Personality-Feldern
+- [ ] Personality-Seite in GUI (alle Felder bearbeitbar, Live-Vorschau des generierten Prompts)
+- [ ] Personality in alle Agent-Aufrufe injizieren (Chief + Quality Conductor)
+- [ ] Mehrsprachigkeit: Personality bestimmt Antwortsprache des Agenten
+- [ ] REST API: GET/PUT /api/personality
+
+## Phase 9: Sandbox-Modus & Betriebsmodi
+- [ ] Globaler Operation-Mode in DB/Config: sandbox | suggest | assist | autonomous
+- [ ] Modus-Umschalter in GUI (mit Erklärung was jeder Modus bedeutet)
+- [ ] Skill-Interface: `dryRun(input): Promise<DryRunResult>` für alle Skills
+- [ ] Sandbox-Log: was CoreClaw getan hätte (pro Nachricht, mit Reasoning)
+- [ ] Sandbox-Dashboard: Dry-Run-Protokoll, erkannte Muster, Skill-Vorschläge
+- [ ] Beobachtung des Gesendet-Ordners (M365): MA-Antworten vs. Dry-Run vergleichen
+- [ ] Learning aus Sandbox-Phase: erkannte Systemzugriffe → Skill-Vorschlag an Admin
+- [ ] Modus-basierte Guards in allen Conductors (kein Senden im Sandbox-Modus)
+
+## Phase 10: Runtime-Plugin-System (Skills 2.0)
+- [ ] Skill-Interface V2: capabilities[], configSchema (JSON Schema), dryRun(), execute()
+- [ ] Skill-Registry: laden, aktivieren, konfigurieren, deaktivieren (Runtime, kein Code-Neustart)
+- [ ] Skill-Setup-Wizard-Framework: configSchema → automatisch GUI-Formular generieren
+- [ ] Skill: WordPress (REST API — Lesen + Schreiben von Custom Post Types)
+- [ ] Skill: Google Drive (Dateien suchen, lesen, hochladen)
+- [ ] Skill: OneDrive/SharePoint (Microsoft Graph, Dateien + Listen)
+- [ ] Skill: Dropbox (Dateien lesen)
+- [ ] Skill: Webhook inbound/outbound (generische HTTP-Integration)
+- [ ] Skill: Microsoft Teams (Nachrichten lesen/senden)
+- [ ] Skill: Slack
+- [ ] Sandbox-Unterstützung: jeder Skill muss dryRun() implementieren
+
+## Phase 11: Architect Agent (Self-Modification)
 - [ ] Architect Agent in container (code generation, testing, commit)
 - [ ] Git integration (auto-commit, push to user's repo)
-- [ ] "Connect WordPress" flow via GUI → generates adapter code as skill
+- [ ] "Connect WordPress" flow via GUI → generates adapter code as new Skill
 - [ ] Test runner for generated code
 - [ ] Restart mechanism after code changes
 - [ ] Rollback on failure (git revert)
 
-## Phase 8: Additional Channels
-- [ ] Microsoft Teams adapter
-- [ ] Slack adapter
-- [ ] Google Chat adapter
-- [ ] Webhook/API adapter (generic inbound/outbound)
-- [ ] Ticketing system adapter (Jira, Zendesk — via skills)
+## Phase 12: Additional Channels (als Skills)
+- [ ] Microsoft Teams
+- [ ] Slack
+- [ ] Google Chat
+- [ ] Webhook/API (generisch inbound/outbound)
+- [ ] Ticketing: Jira, Zendesk
 
-## Phase 9: Advanced Features
+## Phase 13: Advanced Features
 - [ ] Multi-user auth and roles (MA, Team Lead, Admin)
 - [ ] RAG integration (Context Conductor with vector DB)
 - [ ] Multi-tenant support (multiple teams/departments)
